@@ -49,13 +49,25 @@ def ler_saldo_banco_horas():
             if linhas:
                 for linha in reversed(linhas):
                     if linha.startswith("Banco de horas:"):
-                        saldo_anterior = int(linha.split(": ")[1].split(" minutos")[0])
+                        partes = linha.split(": ")[1].split(" horas e ")
+                        horas = int(partes[0])
+                        minutos = int(partes[1].split(" minutos")[0])
+                        saldo_anterior = horas * 60 + minutos
                         return saldo_anterior
     except FileNotFoundError:
         pass
     return 0
 
+def obter_data():
+    data_input = input("Digite a data no formato dd/mm/aaaa (deixe em branco para data atual): ")
+    
+    if not data_input:  # Se o usuário não inserir uma data
+        return datetime.datetime.now().strftime("%d/%m/%Y")  # Retornar a data atual no formato dd/mm/aaaa
+    else:
+        return data_input
+
 def registrar_ponto():
+    data = obter_data()
     hora_chegada_manha = datetime.datetime.strptime(input("Digite a hora de chegada pela manhã (HH:MM): "), '%H:%M').time()
     hora_saida_manha = datetime.datetime.strptime(input("Digite a hora de saída pela manhã (HH:MM): "), '%H:%M').time()
     hora_chegada_tarde = datetime.datetime.strptime(input("Digite a hora de chegada pela tarde (HH:MM): "), '%H:%M').time()
@@ -83,7 +95,7 @@ def registrar_ponto():
             print("Banco de horas:", saldo_total, "minutos")
 
     with open("registro_ponto.txt", "a", encoding="utf-8") as arquivo:
-        arquivo.write(f"Data: {datetime.datetime.now().strftime('%d/%m/%Y')}\n")
+        arquivo.write(f"Data: {data}\n")
         arquivo.write(f"Manhã: {hora_chegada_manha.strftime('%H:%M')} - {hora_saida_manha.strftime('%H:%M')}\n")
         arquivo.write(f"Tarde: {hora_chegada_tarde.strftime('%H:%M')} - {hora_saida_tarde.strftime('%H:%M')}\n")
         if abs(saldo_total) >= 60:
